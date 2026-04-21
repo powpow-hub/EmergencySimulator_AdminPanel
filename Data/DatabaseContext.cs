@@ -1,5 +1,6 @@
 ﻿using EmergencySimulator.AdminPanel.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace EmergencySimulator.AdminPanel.Data
 {
@@ -26,8 +27,10 @@ namespace EmergencySimulator.AdminPanel.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // SQLite connection string
-                optionsBuilder.UseSqlite("Data Source=emergency_simulator.db");
+                string dbPath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "emergency_simulator.db");
+                optionsBuilder.UseSqlite($"Data Source={dbPath}");
             }
         }
 
@@ -47,11 +50,6 @@ namespace EmergencySimulator.AdminPanel.Data
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasMany(e => e.TrainingResults)
-                      .WithOne(e => e.User)
-                      .HasForeignKey(e => e.UserID)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasMany(e => e.SessionLogs)
                       .WithOne(e => e.User)
                       .HasForeignKey(e => e.UserID)
                       .OnDelete(DeleteBehavior.Cascade);
@@ -100,6 +98,7 @@ namespace EmergencySimulator.AdminPanel.Data
                 entity.Property(e => e.SessionStart).IsRequired();
                 entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("В процессе");
                 entity.Property(e => e.PDFReportPath).HasMaxLength(500);
+                entity.Property(e => e.SignificantErrorsCount).HasMaxLength(50);
 
                 entity.HasOne(e => e.User)
                       .WithMany(e => e.TrainingResults)
@@ -111,9 +110,9 @@ namespace EmergencySimulator.AdminPanel.Data
                       .HasForeignKey(e => e.ResultID)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.SessionLog)
+                entity.HasMany(e => e.SessionLogs)       
                       .WithOne(e => e.TrainingResult)
-                      .HasForeignKey<SessionLog>(e => e.ResultID)
+                      .HasForeignKey(e => e.ResultID)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(e => e.EmergencyCalls)
@@ -125,9 +124,10 @@ namespace EmergencySimulator.AdminPanel.Data
             // Настройка таблицы SessionActions
             modelBuilder.Entity<SessionAction>(entity =>
             {
-                entity.HasKey(e => e.ActionID);
-                entity.Property(e => e.ActionName).IsRequired().HasMaxLength(200);
+                entity.HasKey(e => new { e.ResultID, e.ActionOrder });
+
                 entity.Property(e => e.ActionTime).IsRequired();
+                entity.Property(e => e.TimeTaken).IsRequired();
                 entity.Property(e => e.ErrorType).HasMaxLength(50);
                 entity.Property(e => e.ErrorDescription).HasMaxLength(500);
 
@@ -139,7 +139,7 @@ namespace EmergencySimulator.AdminPanel.Data
                 entity.HasOne(e => e.PLAData)
                       .WithMany(e => e.SessionActions)
                       .HasForeignKey(e => e.PlaID)
-                      .OnDelete(DeleteBehavior.SetNull);
+                      .OnDelete(DeleteBehavior.Restrict);  // NOT NULL, поэтому Restrict
 
                 entity.HasOne(e => e.Equipment)
                       .WithMany(e => e.SessionActions)
@@ -150,7 +150,8 @@ namespace EmergencySimulator.AdminPanel.Data
             // Настройка таблицы SessionLogs
             modelBuilder.Entity<SessionLog>(entity =>
             {
-                entity.HasKey(e => e.LogID);
+                entity.HasKey(e => new { e.ResultID, e.LogEntryNumber });
+
                 entity.Property(e => e.EventTime).IsRequired();
                 entity.Property(e => e.EventType).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.EventDescription).IsRequired().HasMaxLength(500);
@@ -158,14 +159,9 @@ namespace EmergencySimulator.AdminPanel.Data
                 entity.Property(e => e.Note).HasMaxLength(1000);
 
                 entity.HasOne(e => e.TrainingResult)
-                      .WithOne(e => e.SessionLog)
-                      .HasForeignKey<SessionLog>(e => e.ResultID)
+                      .WithMany(e => e.SessionLogs)       // коллекция
+                      .HasForeignKey(e => e.ResultID)
                       .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.User)
-                      .WithMany(e => e.SessionLogs)
-                      .HasForeignKey(e => e.UserID)
-                      .OnDelete(DeleteBehavior.NoAction);
             });
 
             // Настройка таблицы Equipments
@@ -185,9 +181,11 @@ namespace EmergencySimulator.AdminPanel.Data
             // Настройка таблицы EmergencyCalls
             modelBuilder.Entity<EmergencyCall>(entity =>
             {
-                entity.HasKey(e => e.CallID);
+                entity.HasKey(e => new { e.ResultID, e.CallTime });
+
                 entity.Property(e => e.CallTime).IsRequired();
                 entity.Property(e => e.IncidentLocation).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.PeopleInZone).IsRequired();
                 entity.Property(e => e.VictimName).HasMaxLength(200);
                 entity.Property(e => e.ReceiverName).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.ReceiverPosition).IsRequired().HasMaxLength(200);

@@ -25,12 +25,5 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
                 .OrderBy(c => c.CallTime)
                 .ToListAsync();
         }
-
-        public IEnumerable<EmergencyCall> GetIncompleteCallsByResultId(int resultId)
-        {
-            return _context.EmergencyCalls
-                .Where(c => c.ResultID == resultId && !c.AllFieldsFilled)
-                .ToList();
-        }
     }
 }

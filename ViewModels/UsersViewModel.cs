@@ -288,28 +288,41 @@ namespace EmergencySimulator.AdminPanel.ViewModels
 
             try
             {
-                var trainingResults = _unitOfWork.TrainingResults.GetByUserId(SelectedUser.UserID);
+                var trainingResults = _unitOfWork.TrainingResults
+                    .GetByUserId(SelectedUser.UserID)
+                    .ToList();
 
-                int totalSessions = trainingResults.Count();
+                int totalSessions = trainingResults.Count;
                 int completedSessions = trainingResults.Count(r => r.Status == "Завершено");
-                double avgScore = trainingResults.Any() ? trainingResults.Average(r => r.TotalScore) : 0;
-                int totalErrors = trainingResults.Sum(r => r.CriticalErrorsCount + r.SignificantErrorsCount);
+                double avgScore = trainingResults.Any()
+                    ? trainingResults.Average(r => r.TotalScore)
+                    : 0;
+
+                // CriticalErrorsCount — double, суммируем напрямую
+                double totalCritical = trainingResults.Sum(r => r.CriticalErrorsCount);
+
+                // SignificantErrorsCount — string, парсим безопасно
+                int totalSignificant = trainingResults.Sum(r =>
+                    int.TryParse(r.SignificantErrorsCount, out int val) ? val : 0);
+
+                int totalTimeViolations = trainingResults.Sum(r => r.TimeViolationsCount);
+                double totalErrors = totalCritical + totalSignificant;
 
                 var stats = $"СТАТИСТИКА ПОЛЬЗОВАТЕЛЯ\n" +
-                           $"═══════════════════════════════\n\n" +
-                           $"ФИО: {SelectedUser.Surname} {SelectedUser.Name} {SelectedUser.MiddleName}\n" +
-                           $"Должность: {SelectedUser.Position}\n\n" +
-                           $"Дата создания: {SelectedUser.CreatedAt:dd.MM.yyyy}\n" +
-                           $"Последний вход: {(SelectedUser.LastLogin.HasValue ? SelectedUser.LastLogin.Value.ToString("dd.MM.yyyy HH:mm") : "Никогда")}\n\n" +
-                           $"РЕЗУЛЬТАТЫ ТРЕНИРОВОК:\n" +
-                           $"───────────────────────────────\n" +
-                           $"Всего тренировок: {totalSessions}\n" +
-                           $"Завершено: {completedSessions}\n" +
-                           $"Средний балл: {avgScore:F1}\n" +
-                           $"Всего ошибок: {totalErrors}\n" +
-                           $"  ├─ Критических: {trainingResults.Sum(r => r.CriticalErrorsCount)}\n" +
-                           $"  ├─ Значительных: {trainingResults.Sum(r => r.SignificantErrorsCount)}\n" +
-                           $"  └─ Нарушений времени: {trainingResults.Sum(r => r.TimeViolationsCount)}";
+                            $"═══════════════════════════════\n\n" +
+                            $"ФИО: {SelectedUser.Surname} {SelectedUser.Name} {SelectedUser.MiddleName}\n" +
+                            $"Должность: {SelectedUser.Position}\n\n" +
+                            $"Дата создания: {SelectedUser.CreatedAt:dd.MM.yyyy}\n" +
+                            $"Последний вход: {(SelectedUser.LastLogin.HasValue ? SelectedUser.LastLogin.Value.ToString("dd.MM.yyyy HH:mm") : "Никогда")}\n\n" +
+                            $"РЕЗУЛЬТАТЫ ТРЕНИРОВОК:\n" +
+                            $"───────────────────────────────\n" +
+                            $"Всего тренировок: {totalSessions}\n" +
+                            $"Завершено: {completedSessions}\n" +
+                            $"Средний балл: {avgScore:F1}\n" +
+                            $"Всего ошибок: {totalErrors:F0}\n" +
+                            $"  ├─ Критических: {totalCritical:F0}\n" +
+                            $"  ├─ Значительных: {totalSignificant}\n" +
+                            $"  └─ Нарушений времени: {totalTimeViolations}";
 
                 MessageBox.Show(stats, "Статистика пользователя",
                     MessageBoxButton.OK, MessageBoxImage.Information);

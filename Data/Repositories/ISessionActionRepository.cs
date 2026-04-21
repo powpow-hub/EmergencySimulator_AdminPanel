@@ -9,6 +9,6 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         IEnumerable<SessionAction> GetByResultId(int resultId);
         Task<IEnumerable<SessionAction>> GetByResultIdAsync(int resultId);
         IEnumerable<SessionAction> GetErrorActions(int resultId);
-        IEnumerable<SessionAction> GetCriticalErrorActions();
+        IEnumerable<SessionAction> GetCriticalErrorActions(int resultId);
     }
 }

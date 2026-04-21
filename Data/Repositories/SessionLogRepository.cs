@@ -14,7 +14,7 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return _context.SessionLogs
                 .Where(l => l.ResultID == resultId)
-                .OrderBy(l => l.EventTime)
+                .OrderBy(l => l.LogEntryNumber)   
                 .ToList();
         }
 
@@ -22,16 +22,8 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return await _context.SessionLogs
                 .Where(l => l.ResultID == resultId)
-                .OrderBy(l => l.EventTime)
+                .OrderBy(l => l.LogEntryNumber)
                 .ToListAsync();
-        }
-
-        public IEnumerable<SessionLog> GetByUserId(int userId)
-        {
-            return _context.SessionLogs
-                .Where(l => l.UserID == userId)
-                .OrderByDescending(l => l.EventTime)
-                .ToList();
         }
     }
 }

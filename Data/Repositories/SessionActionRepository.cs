@@ -13,37 +13,40 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         public IEnumerable<SessionAction> GetByResultId(int resultId)
         {
             return _context.SessionActions
+                .Where(a => a.ResultID == resultId)
                 .Include(a => a.PLAData)
                 .Include(a => a.Equipment)
-                .Where(a => a.ResultID == resultId)
-                .OrderBy(a => a.ActionTime)
+                .OrderBy(a => a.ActionOrder)
                 .ToList();
         }
 
         public async Task<IEnumerable<SessionAction>> GetByResultIdAsync(int resultId)
         {
             return await _context.SessionActions
+                .Where(a => a.ResultID == resultId)
                 .Include(a => a.PLAData)
                 .Include(a => a.Equipment)
-                .Where(a => a.ResultID == resultId)
-                .OrderBy(a => a.ActionTime)
+                .OrderBy(a => a.ActionOrder)
                 .ToListAsync();
         }
 
+        // Действия с любой ошибкой в рамках сессии
         public IEnumerable<SessionAction> GetErrorActions(int resultId)
         {
             return _context.SessionActions
                 .Where(a => a.ResultID == resultId && !a.IsCorrect)
-                .OrderBy(a => a.ActionTime)
+                .Include(a => a.PLAData)
+                .OrderBy(a => a.ActionOrder)
                 .ToList();
         }
 
-        public IEnumerable<SessionAction> GetCriticalErrorActions()
+        // Критические ошибки определяются по полю ErrorType
+        public IEnumerable<SessionAction> GetCriticalErrorActions(int resultId)
         {
             return _context.SessionActions
-                .Where(a => a.ErrorType == "Критическая")
-                .Include(a => a.TrainingResult)
-                    .ThenInclude(r => r.User)
+                .Where(a => a.ResultID == resultId && a.ErrorType == "Критическая")
+                .Include(a => a.PLAData)
+                .OrderBy(a => a.ActionOrder)
                 .ToList();
         }
     }

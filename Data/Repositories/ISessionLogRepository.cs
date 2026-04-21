@@ -8,6 +8,5 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
     {
         IEnumerable<SessionLog> GetByResultId(int resultId);
         Task<IEnumerable<SessionLog>> GetByResultIdAsync(int resultId);
-        IEnumerable<SessionLog> GetByUserId(int userId);
     }
 }

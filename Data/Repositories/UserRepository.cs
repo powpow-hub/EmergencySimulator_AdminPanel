@@ -14,7 +14,7 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
+                // SessionLogs убран — UserID удалён из таблицы SessionLogs
                 .FirstOrDefault(u => u.UserID == id);
         }
 
@@ -22,7 +22,6 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return await _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
                 .FirstOrDefaultAsync(u => u.UserID == id);
         }
 
@@ -30,7 +29,6 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
                 .ToList();
         }
 
@@ -38,7 +36,6 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
         {
             return await _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
                 .ToListAsync();
         }
 
@@ -49,11 +46,10 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
 
             return _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
                 .Where(u => u.Name.Contains(searchText) ||
-                           u.Surname.Contains(searchText) ||
-                           (u.MiddleName != null && u.MiddleName.Contains(searchText)) ||
-                           u.Position.Contains(searchText))
+                            u.Surname.Contains(searchText) ||
+                            (u.MiddleName != null && u.MiddleName.Contains(searchText)) ||
+                            u.Position.Contains(searchText))
                 .ToList();
         }
 
@@ -64,11 +60,10 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
 
             return await _context.Users
                 .Include(u => u.TrainingResults)
-                .Include(u => u.SessionLogs)
                 .Where(u => u.Name.Contains(searchText) ||
-                           u.Surname.Contains(searchText) ||
-                           (u.MiddleName != null && u.MiddleName.Contains(searchText)) ||
-                           u.Position.Contains(searchText))
+                            u.Surname.Contains(searchText) ||
+                            (u.MiddleName != null && u.MiddleName.Contains(searchText)) ||
+                            u.Position.Contains(searchText))
                 .ToListAsync();
         }
 

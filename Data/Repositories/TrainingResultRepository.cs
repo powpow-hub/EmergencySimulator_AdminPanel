@@ -16,7 +16,7 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
             return _context.TrainingResults
                 .Include(r => r.User)
                 .Include(r => r.SessionActions)
-                .Include(r => r.SessionLog)
+                .Include(r => r.SessionLogs)
                 .Include(r => r.EmergencyCalls)
                 .OrderByDescending(r => r.SessionStart)
                 .ToList();
@@ -27,7 +27,7 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
             return await _context.TrainingResults
                 .Include(r => r.User)
                 .Include(r => r.SessionActions)
-                .Include(r => r.SessionLog)
+                .Include(r => r.SessionLogs)
                 .Include(r => r.EmergencyCalls)
                 .OrderByDescending(r => r.SessionStart)
                 .ToListAsync();

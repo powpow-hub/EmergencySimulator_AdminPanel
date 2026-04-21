@@ -8,6 +8,5 @@ namespace EmergencySimulator.AdminPanel.Data.Repositories
     {
         IEnumerable<EmergencyCall> GetByResultId(int resultId);
         Task<IEnumerable<EmergencyCall>> GetByResultIdAsync(int resultId);
-        IEnumerable<EmergencyCall> GetIncompleteCallsByResultId(int resultId);
     }
 }

@@ -17,6 +17,5 @@ namespace EmergencySimulator.AdminPanel.Models
 
         // Навигационные свойства
         public virtual ICollection<TrainingResult> TrainingResults { get; set; } = new List<TrainingResult>();
-        public virtual ICollection<SessionLog> SessionLogs { get; set; } = new List<SessionLog>();
     }
 }

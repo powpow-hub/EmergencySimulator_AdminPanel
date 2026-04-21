@@ -100,8 +100,14 @@ namespace EmergencySimulator.AdminPanel.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                string fullError = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    fullError += $"\n\nInner: {inner.Message}";
+                    inner = inner.InnerException;
+                }
+                MessageBox.Show(fullError, "Ошибка загрузки", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
